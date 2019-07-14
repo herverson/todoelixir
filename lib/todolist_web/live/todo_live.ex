@@ -2,8 +2,9 @@ defmodule TodolistWeb.TodoLive do
   use Phoenix.LiveView
   alias Todolist.Todos
   alias TodolistWeb.TodoView
-  
+
   def mount(_session, socket) do
+    Todos.subscribe()
     {:ok, fetch(socket)}
   end
 
@@ -14,6 +15,17 @@ defmodule TodolistWeb.TodoLive do
   def handle_event("add", %{"todo" => todo}, socket) do
     Todos.create_todo(todo)
 
+    {:noreply, fetch(socket)}
+  end
+
+  def handle_event("toggle_done", id, socket) do
+    todo = Todos.get_todo!(id)
+    Todos.update_todo(todo, %{feito: !todo.feito})
+
+    {:noreply, fetch(socket)}
+  end
+
+  def handle_info({Todos, [:todo | _], _}, socket) do
     {:noreply, fetch(socket)}
   end
 

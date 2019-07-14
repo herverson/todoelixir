@@ -7,6 +7,7 @@ defmodule Todolist.Todos do
   alias Todolist.Repo
 
   alias Todolist.Todos.Todo
+  @topic inspect(__MODULE__)
 
   @doc """
   Returns the list of todos.
@@ -53,6 +54,7 @@ defmodule Todolist.Todos do
     %Todo{}
     |> Todo.changeset(attrs)
     |> Repo.insert()
+    |> broadcast_change([:todo, :criado])
   end
 
   @doc """
@@ -71,6 +73,7 @@ defmodule Todolist.Todos do
     todo
     |> Todo.changeset(attrs)
     |> Repo.update()
+    |> broadcast_change([:todo, :alterado])
   end
 
   @doc """
@@ -86,7 +89,9 @@ defmodule Todolist.Todos do
 
   """
   def delete_todo(%Todo{} = todo) do
-    Repo.delete(todo)
+    todo
+    |> Repo.delete()
+    |> broadcast_change([:todo, :deletado])
   end
 
   @doc """
@@ -100,5 +105,14 @@ defmodule Todolist.Todos do
   """
   def change_todo(%Todo{} = todo) do
     Todo.changeset(todo, %{})
+  end
+
+  def subscribe do
+    Phoenix.PubSub.subscribe(Todolist.PubSub, @topic)
+  end
+
+  defp broadcast_change({:ok, result}, event) do
+    Phoenix.PubSub.broadcast(Todolist.PubSub, @topic, {__MODULE__})
+    {:ok, result}
   end
 end
