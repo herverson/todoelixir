@@ -1,5 +1,5 @@
 <form action="#" phx-submit="add">
-  <%= text_input :todo, :title, placeholder: "O que você quer fazer?" %>
+  <%= text_input :todo, :title, placeholder: "O que você deseja fazer?" %>
   <%= submit "Adicionar", phx_disable_with: "Adicionando..." %>
 </form>
 <%= for todo <- @todos do %>
